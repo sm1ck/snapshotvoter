@@ -39,7 +39,7 @@ const random_max = 4; // максимальный номер в голосова
 const isSleep = false; // задержка перед отправкой, нужна ли? изменить на true, если нужна
 const sleep_from = 30; // от 30 секунд
 const sleep_to = 60; // до 60 секунд
-const isPropList = true; // кастомный список проползалов
+const isPropList = false; // кастомный список проползалов
 let isParseProps = false;
 
 /**
