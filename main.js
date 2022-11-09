@@ -11,11 +11,21 @@
  * Номер варианта - просто порядковый номер варианта
  * Так как бывает подкидывают проползал специально для ботов, поэтому моя реализация
  * для голосования по ID проползала не в полном авто-режиме
+ * Автоматически спарсить и скопировать в файл props.json список активных проползалов проекта:
+ * node main.js <название_проекта> getprops
  */
 
 import ethers from 'ethers';
 import snapshot from '@snapshot-labs/snapshot.js';
 import * as accs from './accs.js';
+import fetch from 'node-fetch'
+import { exit } from 'process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // rpc node url
 
@@ -29,7 +39,8 @@ const random_max = 4; // максимальный номер в голосова
 const isSleep = false; // задержка перед отправкой, нужна ли? изменить на true, если нужна
 const sleep_from = 30; // от 30 секунд
 const sleep_to = 60; // до 60 секунд
-const isPropList = false; // кастомный список проползалов
+const isPropList = true; // кастомный список проползалов
+let isParseProps = false;
 
 /**
  * Абстрактная задержка
@@ -60,11 +71,49 @@ process.argv.forEach(function (val, index, array) {
         case 2:
             project = val;
         case 3:
-            prop_id = val;
+            if (String(val).toLowerCase() == 'getprops') {
+                isParseProps = true;
+            } else {
+                prop_id = val;
+            }
         case 4:
             vote = val;
     }
 });
+
+// Парсинг
+
+if (isParseProps) {
+    let q = `
+    query {
+        proposals (
+          where: {
+            space_in: ["${project}"],
+            state: "active"
+          }
+        ) {
+          id
+        }
+      }`;
+    await fetch('https://hub.snapshot.org/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({query: q})
+    }).then(r => r.json()).then(data => {
+        if (data.hasOwnProperty('data') && data.data.hasOwnProperty('proposals')) {
+            let arr = [];
+            data.data.proposals.forEach(i => arr.push(i.id));
+            fs.writeFileSync(path.join(__dirname, '/props.json'), JSON.stringify(arr, null, 4), { encoding: 'utf8', flag: 'w' });
+            console.log('Данные сохранены, проверьте props.json.');
+        } else {
+            console.log('Ошибка при парсинге данных.')
+        }
+    });
+    exit();
+}
 
 // Запуск rpc
 
