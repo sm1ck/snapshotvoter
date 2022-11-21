@@ -72,7 +72,7 @@ const randomIntInRange = (min, max) => {
 };
 
 /**
- * Повтрная отправка действия
+ * Повторная отправка действия
  * @param {String} address адрес
  * @param {Arrow function} operation стрелочная функция
  * @param {Integer} delay задержка в милли секундах
