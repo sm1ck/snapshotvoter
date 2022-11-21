@@ -48,233 +48,232 @@
  * @returns 
  */
 
- const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, millis));
+const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, millis));
 
- /**
-  * Абстрактная задержка
-  * @param {Integer} millis 
-  * @returns 
-  */
- 
- const wait = ms => new Promise(r => setTimeout(r, ms));
- 
- /**
-  * Запись в итоговый результат
-  * @param {String} address
-  * @param {String} result
-  */
- 
- const add_result = (address, result) => pretty_result.push({'Адрес': address, 'Результат': result});
- 
- /**
-  * Случайное min/max целое значение
-  * @param {Integer} min 
-  * @param {Integer} max 
-  * @returns Случайное число
-  */
- 
- const randomIntInRange = (min, max) => {
-     return Math.floor(Math.random() * (max - min + 1)) + min;
- };
- 
- /**
-  * Повторная отправка действия
-  * @param {String} address адрес
-  * @param {Arrow function} operation стрелочная функция
-  * @param {Integer} delay задержка в милли секундах
-  * @param {Integer} retries количество повторов
-  * @returns Promise
-  */
- 
- const retryOperation = (address, operation, delay, retries) => new Promise((resolve, reject) => {
-     return operation
-       .then(resolve)
-       .catch((reason) => {
-         if (retries > 0) {
-           console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
-           return wait(delay*1000)
-             .then(retryOperation.bind(null, address, operation, delay, retries - 1))
-             .then(resolve)
-             .catch(reject);
-         }
-         return reject(reason);
-     });
- });
- 
- /**
-  * Голосование
-  * @param {Wallet} wallet 
-  * @param {String} address
-  * @param {String} prop
-  * @returns Promise
-  */
- 
- const voteSnap = (ethWallet, address, prop) => new Promise((resolve, reject) => {
-     try {
-         const prom_vote = client.vote(ethWallet, address, {
-             space: project,
-             proposal: prop,
-             type: 'single-choice',
-             choice: rand_mode == 0 ? Number(vote) : randomIntInRange(random_min, random_max),
-             reason: '',
-             app: 'snapshot'
-         }).then((result) => {
-             if (result.hasOwnProperty('id')) {
-                 console.log(`(Голосование) ${address} => голос засчитан`);
-                 add_result(address, 'засчитано');
-             } else {
-                 console.log(`(Голосование) ${address} =>`);
-                 console.dir(result);
-                 add_result(address, 'неизвестно');
-             }
-             resolve();
-         }).catch((err) => {
-             if (typeof err.error_description !== 'string') {
-                 console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
-                 console.dir(err.error_description);
-             } else {
-                 console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
-             }
-             add_result(address, `${err.error}: ${err.error_description}`);
-             ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
-         });
-     } catch (err) {
-         console.log(`(Голосование) ${address} => ошибка "${err.name}": ${err.message}`);
-         add_result(address, `${err.name}: ${err.message}`);
-         reject();
-     }
- });
- 
- /**
-  * Подписка
-  * @param {Wallet} wallet 
-  * @param {String} address
-  * @returns Promise
-  */
- 
-  const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
-     try {
-         const prom_sub = client.follow(ethWallet, address, {
-             space: project
-         }).then((result) => {
-             if (result.hasOwnProperty('id')) {
-                 console.log(`(Подписка) ${address} => вы подписались`);
-             } else {
-                 console.log(`(Подписка) ${address} =>`);
-                 console.dir(result);
-             }
-             resolve();
-         }).catch((err) => {
-             if (typeof err.error_description !== 'string') {
-                 console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
-                 console.dir(err.error_description);
-             } else {
-                 console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
-             }
-             ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
-         });
-     } catch (err) {
-         console.log(`(Подписка) ${address} => ошибка "${err.name}": ${err.message}`);
-         reject();
-     }
- });
- 
- // Парсинг параметров
- 
- let project, prop_id, vote;
- process.argv.forEach(function (val, index, array) {
-     switch (index) {
-         case 2:
-             project = val;
-         case 3:
-             if (String(val).toLowerCase() == 'getprops') {
-                 isParseProps = true;
-             } else {
-                 prop_id = val;
-             }
-         case 4:
-             vote = val;
-     }
- });
- 
- // Парсинг
- 
- if (isParseProps) {
-     let q = `
-     query {
-         proposals (
-           where: {
-             space_in: ["${project}"],
-             state: "active"
-           }
-         ) {
-           id
-         }
-       }`;
-     await fetch('https://hub.snapshot.org/graphql', {
-         method: 'POST',
-         headers: {
-           'Content-Type': 'application/json',
-           'Accept': 'application/json',
-         },
-         body: JSON.stringify({query: q})
-     }).then(r => r.json()).then(data => {
-         if (data.hasOwnProperty('data') && data.data.hasOwnProperty('proposals')) {
-             let arr = [];
-             data.data.proposals.forEach(i => arr.push(i.id));
-             fs.writeFileSync(path.join(__dirname, '/props.json'), JSON.stringify(arr, null, 4), { encoding: 'utf8', flag: 'w' });
-             console.log('Данные сохранены, проверьте props.json.');
-         } else {
-             console.log('Ошибка при парсинге данных.')
-         }
-     });
-     exit();
- }
- 
- // Запуск rpc
- 
- const web3 = new ethers.providers.JsonRpcProvider(url);
- const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
- const client = new snapshot.Client712(hub);
- 
- // Чтение аккаунтов
- 
- const adata = accs.importAccs();
- let props_list = isPropList ? accs.importProps() : [prop_id];
- 
- // Перебор аккаунтов
- 
- let i = 0, promises = [], pretty_result = [];
- for (let acc of adata) {
-     const ethWallet = new ethers.Wallet(acc, web3);
-     const address = await ethWallet.getAddress();
-     let prom = promises.push(new Promise(async (resolve, reject) => {
- 
-         // Голосование
- 
-         let prom_list = [];
-         props_list.forEach((prop) => prom_list.push(retryOperation(address, voteSnap(ethWallet, address, prop), isSleep ? randomIntInRange(sleep_from, sleep_to) : 1, 3)));
- 
-         // Подписка
- 
-         prom_list.push(retryOperation(address, subSnap(ethWallet, address), isSleep ? randomIntInRange(sleep_from, sleep_to) : 1, 3));
-         
-         await Promise.all(prom_list).then(() => resolve()).catch(() => resolve());
- 
-     }));
- 
-     // Задержка
- 
-     if (isSleep) {
-         let sle = randomIntInRange(sleep_from, sleep_to);
-         promises.at(prom - 1).then(() => i < adata.length ? console.log(`Задержка ${sle}с..`) : null);
-         i < adata.length ? await sleep(sle * 1000) : null;
-     }
- 
-     ++i;
- }
- 
- // Результат
- 
- await Promise.all(promises);
- console.table(pretty_result);
+/**
+ * Абстрактная задержка
+ * @param {Integer} millis 
+ * @returns 
+ */
+
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+/**
+ * Запись в итоговый результат
+ * @param {String} address
+ * @param {String} result
+ */
+
+const add_result = (address, result) => pretty_result.push({'Адрес': address, 'Результат': result});
+
+/**
+ * Случайное min/max целое значение
+ * @param {Integer} min 
+ * @param {Integer} max 
+ * @returns Случайное число
+ */
+
+const randomIntInRange = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+/**
+ * Повторная отправка действия
+ * @param {String} address адрес
+ * @param {Arrow function} operation стрелочная функция
+ * @param {Integer} delay задержка в милли секундах
+ * @param {Integer} retries количество повторов
+ * @returns Promise
+ */
+
+const retryOperation = (address, operation, delay, retries) => new Promise((resolve, reject) => {
+    return operation
+    .then(resolve)
+    .catch((reason) => {
+        if (retries > 0) {
+        console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
+        return wait(delay*1000)
+            .then(retryOperation.bind(null, address, operation, delay, retries - 1))
+            .then(resolve)
+            .catch(reject);
+        }
+        return reject(reason);
+    });
+});
+
+/**
+ * Голосование
+ * @param {Wallet} wallet 
+ * @param {String} address
+ * @param {String} prop
+ * @returns Promise
+ */
+
+const voteSnap = (ethWallet, address, prop) => new Promise((resolve, reject) => {
+    try {
+        const prom_vote = client.vote(ethWallet, address, {
+            space: project,
+            proposal: prop,
+            type: 'single-choice',
+            choice: rand_mode == 0 ? Number(vote) : randomIntInRange(random_min, random_max),
+            reason: '',
+            app: 'snapshot'
+        }).then((result) => {
+            if (result.hasOwnProperty('id')) {
+                console.log(`(Голосование) ${address} => голос засчитан`);
+                add_result(address, 'засчитано');
+            } else {
+                console.log(`(Голосование) ${address} =>`);
+                console.dir(result);
+                add_result(address, 'неизвестно');
+            }
+            resolve();
+        }).catch((err) => {
+            if (typeof err.error_description !== 'string') {
+                console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
+                console.dir(err.error_description);
+            } else {
+                console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
+            }
+            add_result(address, `${err.error}: ${err.error_description}`);
+            ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
+        });
+    } catch (err) {
+        console.log(`(Голосование) ${address} => ошибка "${err.name}": ${err.message}`);
+        add_result(address, `${err.name}: ${err.message}`);
+        reject();
+    }
+});
+
+/**
+ * Подписка
+ * @param {Wallet} wallet 
+ * @param {String} address
+ * @returns Promise
+ */
+
+const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
+    try {
+        const prom_sub = client.follow(ethWallet, address, {
+            space: project
+        }).then((result) => {
+            if (result.hasOwnProperty('id')) {
+                console.log(`(Подписка) ${address} => вы подписались`);
+            } else {
+                console.log(`(Подписка) ${address} =>`);
+                console.dir(result);
+            }
+            resolve();
+        }).catch((err) => {
+            if (typeof err.error_description !== 'string') {
+                console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
+                console.dir(err.error_description);
+            } else {
+                console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
+            }
+            ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
+        });
+    } catch (err) {
+        console.log(`(Подписка) ${address} => ошибка "${err.name}": ${err.message}`);
+        reject();
+    }
+});
+
+// Парсинг параметров
+
+let project, prop_id, vote;
+process.argv.forEach(function (val, index, array) {
+    switch (index) {
+        case 2:
+            project = val;
+        case 3:
+            if (String(val).toLowerCase() == 'getprops') {
+                isParseProps = true;
+            } else {
+                prop_id = val;
+            }
+        case 4:
+            vote = val;
+    }
+});
+
+// Парсинг
+
+if (isParseProps) {
+    let q = `
+    query {
+        proposals (
+        where: {
+            space_in: ["${project}"],
+            state: "active"
+        }
+        ) {
+        id
+        }
+    }`;
+    await fetch('https://hub.snapshot.org/graphql', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        },
+        body: JSON.stringify({query: q})
+    }).then(r => r.json()).then(data => {
+        if (data.hasOwnProperty('data') && data.data.hasOwnProperty('proposals')) {
+            let arr = [];
+            data.data.proposals.forEach(i => arr.push(i.id));
+            fs.writeFileSync(path.join(__dirname, '/props.json'), JSON.stringify(arr, null, 4), { encoding: 'utf8', flag: 'w' });
+            console.log('Данные сохранены, проверьте props.json.');
+        } else {
+            console.log('Ошибка при парсинге данных.')
+        }
+    });
+    exit();
+}
+
+// Запуск rpc
+
+const web3 = new ethers.providers.JsonRpcProvider(url);
+const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
+const client = new snapshot.Client712(hub);
+
+// Чтение аккаунтов
+
+const adata = accs.importAccs();
+let props_list = isPropList ? accs.importProps() : [prop_id];
+
+// Перебор аккаунтов
+
+let i = 0, promises = [], pretty_result = [];
+for (let acc of adata) {
+    const ethWallet = new ethers.Wallet(acc, web3);
+    const address = await ethWallet.getAddress();
+    let prom = promises.push(new Promise(async (resolve, reject) => {
+
+        // Голосование
+
+        let prom_list = [];
+        props_list.forEach((prop) => prom_list.push(retryOperation(address, voteSnap(ethWallet, address, prop), isSleep ? randomIntInRange(sleep_from, sleep_to) : 1, 3)));
+
+        // Подписка
+
+        prom_list.push(retryOperation(address, subSnap(ethWallet, address), isSleep ? randomIntInRange(sleep_from, sleep_to) : 1, 3));
+        
+        await Promise.all(prom_list).then(() => resolve()).catch(() => resolve());
+
+    }));
+
+    // Задержка
+
+    if (isSleep) {
+        let sle = randomIntInRange(sleep_from, sleep_to);
+        promises.at(prom - 1).then(() => i < adata.length ? console.log(`Задержка ${sle}с..`) : null);
+        i < adata.length ? await sleep(sle * 1000) : null;
+    }
+
+    ++i;
+}
+
+// Результат
+
+Promise.all(promises).then(() => console.table(pretty_result));
