@@ -24,6 +24,7 @@
  import * as path from 'path';
  import { fileURLToPath } from 'url';
  
+ const version = '1.1.0';
  const __filename = fileURLToPath(import.meta.url);
  const __dirname = path.dirname(__filename);
  
@@ -179,6 +180,11 @@ const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
         reject();
     }
 });
+
+// Авторство
+
+console.log(`-=- snapshotvoter v${version} -=-`);
+console.log('License: ISC, Author: @Jancrypto, Donate: 0x9D278054C3e73294215b63ceF34c385Abe52768B');
 
 // Парсинг параметров
 
