@@ -45,7 +45,7 @@
 /**
  * Абстрактная задержка (async)
  * @param {Integer} millis 
- * @returns 
+ * @returns
  */
 
 const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, millis));
@@ -53,7 +53,7 @@ const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, milli
 /**
  * Абстрактная задержка
  * @param {Integer} millis 
- * @returns 
+ * @returns
  */
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -62,6 +62,7 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
  * Запись в итоговый результат
  * @param {String} address
  * @param {String} result
+ * @returns
  */
 
 const add_result = (address, result) => pretty_result.push({'Адрес': address, 'Результат': result});
