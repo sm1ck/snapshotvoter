@@ -276,4 +276,4 @@ for (let acc of adata) {
 
 // Результат
 
-Promise.all(promises).then(() => console.table(pretty_result));
+await Promise.all(promises).then(() => console.table(pretty_result));
