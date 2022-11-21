@@ -184,7 +184,7 @@ const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
 // Авторство
 
 console.log(`-=- snapshotvoter v${version} -=-`);
-console.log('License: ISC, Author: @Jancrypto, Donate: 0x9D278054C3e73294215b63ceF34c385Abe52768B');
+console.log('License: ISC\nAuthor: @Jancrypto\nDonate: 0x9D278054C3e73294215b63ceF34c385Abe52768B');
 
 // Парсинг параметров
 
