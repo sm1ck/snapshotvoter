@@ -14,6 +14,7 @@
 ## Установка
 ```
 git clone https://github.com/sm1ck/snapshotvoter.git
+cd snapshotvoter
 npm i
 ```
 ## Настройка
