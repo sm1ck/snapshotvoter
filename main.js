@@ -173,7 +173,7 @@ const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
             } else {
                 console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
             }
-            ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
+            ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
         });
     } catch (err) {
         console.log(`(Подписка) ${address} => ошибка "${err.name}": ${err.message}`);
