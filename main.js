@@ -111,40 +111,34 @@ const retryOperation = (address, operation, delay, retries) => new Promise((reso
  * @returns Promise
  */
 
-const voteSnap = (ethWallet, address, prop) => new Promise((resolve, reject) => {
-    try {
-        const prom_vote = client.vote(ethWallet, address, {
-            space: project,
-            proposal: prop,
-            type: 'single-choice',
-            choice: rand_mode == 0 ? Number(vote) : randomIntInRange(random_min, random_max),
-            reason: '',
-            app: 'snapshot'
-        }).then((result) => {
-            if (result.hasOwnProperty('id')) {
-                console.log(`(Голосование) ${address} => голос засчитан`);
-                add_result(address, 'засчитано');
-            } else {
-                console.log(`(Голосование) ${address} =>`);
-                console.dir(result);
-                add_result(address, 'неизвестно');
-            }
-            resolve();
-        }).catch((err) => {
-            if (typeof err.error_description !== 'string') {
-                console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
-                console.dir(err.error_description);
-            } else {
-                console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
-            }
-            add_result(address, `${err.error}: ${err.error_description}`);
-            ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
-        });
-    } catch (err) {
-        console.log(`(Голосование) ${address} => ошибка "${err.name}": ${err.message}`);
-        add_result(address, `${err.name}: ${err.message}`);
-        reject();
-    }
+const voteSnap = (ethWallet, address, prop) => new Promise(async (resolve, reject) => {
+    await client.vote(ethWallet, address, {
+        space: project,
+        proposal: prop,
+        type: 'single-choice',
+        choice: rand_mode == 0 ? Number(vote) : randomIntInRange(random_min, random_max),
+        reason: '',
+        app: 'snapshot'
+    }).then((result) => {
+        if (result.hasOwnProperty('id')) {
+            console.log(`(Голосование) ${address} => голос засчитан`);
+            add_result(address, 'засчитано');
+        } else {
+            console.log(`(Голосование) ${address} =>`);
+            console.dir(result);
+            add_result(address, 'неизвестно');
+        }
+        resolve();
+    }).catch((err) => {
+        if (typeof err.error_description !== 'string') {
+            console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
+            console.dir(err.error_description);
+        } else {
+            console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
+        }
+        add_result(address, `${err.error}: ${err.error_description}`);
+        ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+    });
 });
 
 /**
@@ -154,31 +148,26 @@ const voteSnap = (ethWallet, address, prop) => new Promise((resolve, reject) => 
  * @returns Promise
  */
 
-const subSnap = (ethWallet, address) => new Promise((resolve, reject) => {
-    try {
-        const prom_sub = client.follow(ethWallet, address, {
-            space: project
-        }).then((result) => {
-            if (result.hasOwnProperty('id')) {
-                console.log(`(Подписка) ${address} => вы подписались`);
-            } else {
-                console.log(`(Подписка) ${address} =>`);
-                console.dir(result);
-            }
-            resolve();
-        }).catch((err) => {
-            if (typeof err.error_description !== 'string') {
-                console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
-                console.dir(err.error_description);
-            } else {
-                console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
-            }
-            ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
-        });
-    } catch (err) {
-        console.log(`(Подписка) ${address} => ошибка "${err.name}": ${err.message}`);
-        reject();
-    }
+const subSnap = (ethWallet, address) => new Promise(async (resolve, reject) => {
+    await client.follow(ethWallet, address, {
+        space: project
+    }).then((result) => {
+        if (result.hasOwnProperty('id')) {
+            console.log(`(Подписка) ${address} => вы подписались`);
+        } else {
+            console.log(`(Подписка) ${address} =>`);
+            console.dir(result);
+        }
+        resolve();
+    }).catch((err) => {
+        if (typeof err.error_description !== 'string') {
+            console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
+            console.dir(err.error_description);
+        } else {
+            console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
+        }
+        ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+    });
 });
 
 // Авторство
