@@ -138,7 +138,7 @@ const voteSnap = (ethWallet, address, prop) => new Promise((resolve, reject) => 
                 console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
             }
             add_result(address, `${err.error}: ${err.error_description}`);
-            ((typeof err.error_description === 'string' && err.error_description.includes('many')) || typeof err.error_description !== 'string') ? reject() : resolve();
+            ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
         });
     } catch (err) {
         console.log(`(Голосование) ${address} => ошибка "${err.name}": ${err.message}`);
