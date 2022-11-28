@@ -193,25 +193,41 @@ process.argv.forEach(function (val, index, array) {
     }
 });
 
+// Unhandled errors/promises, fix app crash
+
+process.on('uncaughtException', (error, origin) => {
+    console.log('----- Uncaught exception -----');
+    console.dir(error);
+    console.log('----- Exception origin -----');
+    console.dir(origin);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('----- Unhandled Rejection at -----');
+    console.dir(promise);
+    console.log('----- Reason -----');
+    console.dir(reason);
+});
+
 // Парсинг
 
 if (isParseProps) {
     let q = `
     query {
         proposals (
-        where: {
+          where: {
             space_in: ["${project}"],
             state: "active"
-        }
+          }
         ) {
-        id
+          id
         }
-    }`;
+      }`;
     await fetch('https://hub.snapshot.org/graphql', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: JSON.stringify({query: q})
     }).then(r => r.json()).then(data => {
@@ -255,7 +271,7 @@ for (let acc of adata) {
 
         prom_list.push(retryOperation(address, subSnap(ethWallet, address), isSleep ? randomIntInRange(sleep_from, sleep_to) : 1, 3));
         
-        await Promise.all(prom_list).then(() => resolve()).catch(() => resolve());
+        await Promise.allSettled(prom_list).then(() => resolve());
 
     }));
 
@@ -272,4 +288,4 @@ for (let acc of adata) {
 
 // Результат
 
-await Promise.all(promises).then(() => console.table(pretty_result));
+await Promise.allSettled(promises).then(() => console.table(pretty_result));
