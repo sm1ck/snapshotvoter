@@ -117,7 +117,7 @@ const voteSnap = (ethWallet, address, prop) => new Promise(async (resolve, rejec
         space: project,
         proposal: prop,
         type: type_voting == 0 ? 'single-choice' : 'approval',
-        choice: rand_mode == 0 ? type_voting == 0 ? Number(vote) : [Number(vote)] : type_voting == 0 ? randomIntInRange(random_min, random_max) : [randomIntInRange(random_min, random_max)],
+        choice: rand_mode == 0 ? type_voting == 0 ? vote : Array.isArray(vote) ? vote : [vote] : type_voting == 0 ? randomIntInRange(random_min, random_max) : [randomIntInRange(random_min, random_max)],
         reason: '',
         app: 'snapshot'
     }).then((result) => {
@@ -190,7 +190,7 @@ process.argv.forEach(function (val, index, array) {
                 prop_id = val;
             }
         case 4:
-            vote = val;
+            vote = val.includes(',') ? val.split(',').map(Number) : +val;
     }
 });
 
