@@ -41,7 +41,7 @@
  const sleep_from = 3; // от 3 секунд
  const sleep_to = 5; // до 5 секунд
  const isPropList = false; // кастомный список проползалов
- const type_voting = 1; // 0 => стандартный, 1 => approval
+ const type_voting = 0; // 0 => стандартный, 1 => approval
  let isParseProps = false;
 
 /**
