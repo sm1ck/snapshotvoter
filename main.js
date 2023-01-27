@@ -15,39 +15,63 @@
  * node main.js <название_проекта> getprops
  */
 
- import ethers from 'ethers';
- import snapshot from '@snapshot-labs/snapshot.js';
- import * as accs from './accs.js';
- import fetch from 'node-fetch'
- import { exit } from 'process';
- import * as fs from 'fs';
- import * as path from 'path';
- import { fileURLToPath } from 'url';
- 
- const version = '1.1.0';
- const __filename = fileURLToPath(import.meta.url);
- const __dirname = path.dirname(__filename);
- 
- // rpc node url
- 
- const url = "https://rpc.ankr.com/eth";
- 
- // Базовые переменные
- 
- const rand_mode = 0; // 0 => стандартный, 1 => рандомная отправка варианта
- const random_min = 1; // минимальный номер в голосовании
- const random_max = 3; // максимальный номер в голосовании
- const isSleep = false; // задержка перед отправкой, нужна ли? изменить на true, если нужна
- const sleep_from = 3; // от 3 секунд
- const sleep_to = 5; // до 5 секунд
- const isPropList = false; // кастомный список проползалов
- const type_voting = 0; // 0 => стандартный, 1 => approval
- let isParseProps = false;
+import ethers from 'ethers';
+import snapshot from '@snapshot-labs/snapshot.js';
+import * as accs from './accs.js';
+import fetch from 'node-fetch'
+import { exit } from 'process';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const version = '1.2.0';
+const __dirname = path.resolve();
+
+// rpc node url
+
+const url = "https://rpc.ankr.com/eth";
+
+// Базовые переменные
+
+const rand_mode = 0; // 0 => стандартный, 1 => рандомная отправка варианта
+const random_min = 1; // минимальный номер в голосовании
+const random_max = 3; // максимальный номер в голосовании
+const isSleep = true; // задержка перед отправкой, нужна ли? изменить на true, если нужна
+const sleep_from = 3; // от 3 секунд
+const sleep_to = 5; // до 5 секунд
+const isPropList = false; // кастомный список проползалов
+const type_voting = 0; // 0 => стандартный, 1 => approval
+let isParseProps = false;
+
+// Кастомный клиент для обработки исключений
+
+class ClientCustom extends snapshot.Client712 {
+    async send(envelop) {
+        const url = `${this.address}/api/msg`;
+        const init = {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            timeout: 5000,
+            body: JSON.stringify(envelop)
+        };
+        return new Promise((resolve, reject) => {
+            fetch(url, init).then((res) => {
+                if (res.ok) {
+                    return resolve(res.json());
+                }
+                throw res;
+            })
+            .catch((e) => typeof e.json === 'function' ? e.json().then((json) => reject(json)) : reject({error: 'Error', error_description: e.message, error_stack: e.stack}));
+        });
+    }
+}
 
 /**
  * Абстрактная задержка (async)
  * @param {Integer} millis 
- * @returns
+ * @returns 
  */
 
 const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, millis));
@@ -55,7 +79,7 @@ const sleep = async (millis) => new Promise(resolve => setTimeout(resolve, milli
 /**
  * Абстрактная задержка
  * @param {Integer} millis 
- * @returns
+ * @returns 
  */
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -91,11 +115,11 @@ const randomIntInRange = (min, max) => {
 
 const retryOperation = (address, operation, delay, retries) => new Promise((resolve, reject) => {
     return operation
-    .then(resolve)
-    .catch((reason) => {
+      .then(resolve)
+      .catch((reason) => {
         if (retries > 0) {
-        console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
-        return wait(delay*1000)
+          console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
+          return wait(delay*1000)
             .then(retryOperation.bind(null, address, operation, delay, retries - 1))
             .then(resolve)
             .catch(reject);
@@ -134,8 +158,14 @@ const voteSnap = (ethWallet, address, prop) => new Promise(async (resolve, rejec
         if (typeof err.error_description !== 'string') {
             console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
             console.dir(err.error_description);
+            if (err.hasOwnProperty('error_stack')) {
+                console.log(err.error_stack);
+            }
         } else {
             console.log(`(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`);
+            if (err.hasOwnProperty('error_stack')) {
+                console.log(err.error_stack);
+            }
         }
         add_result(address, `${err.error}: ${err.error_description}`);
         ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
@@ -164,8 +194,14 @@ const subSnap = (ethWallet, address) => new Promise(async (resolve, reject) => {
         if (typeof err.error_description !== 'string') {
             console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
             console.dir(err.error_description);
+            if (err.hasOwnProperty('error_stack')) {
+                console.log(err.error_stack);
+            }
         } else {
             console.log(`(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`);
+            if (err.hasOwnProperty('error_stack')) {
+                console.log(err.error_stack);
+            }
         }
         ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
     });
@@ -174,7 +210,7 @@ const subSnap = (ethWallet, address) => new Promise(async (resolve, reject) => {
 // Авторство
 
 console.log(`-=- snapshotvoter v${version} -=-`);
-console.log('License: ISC\nAuthor: @Jancrypto\nDonate: 0x9D278054C3e73294215b63ceF34c385Abe52768B');
+console.log('License: ISC\nAuthor: @JanSergeev\nDonate: 0x9D278054C3e73294215b63ceF34c385Abe52768B');
 
 // Парсинг параметров
 
@@ -248,7 +284,7 @@ if (isParseProps) {
 
 const web3 = new ethers.providers.JsonRpcProvider(url);
 const hub = 'https://hub.snapshot.org'; // or https://testnet.snapshot.org for testnet
-const client = new snapshot.Client712(hub);
+const client = new ClientCustom(hub);
 
 // Чтение аккаунтов
 
