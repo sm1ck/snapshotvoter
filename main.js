@@ -117,7 +117,7 @@ const retryOperation = (address, operation, delay, retries) => new Promise((reso
         .then(resolve)
         .catch((reason) => {
             if (retries > 0) {
-                if (typeof reason === 'string' && reason.includes('timeout') && retries === 3) {
+                if (typeof reason === 'string' && (reason.includes('timeout') || reason.includes('failed')) && retries === 3) {
                     retries = 1000;
                 }
                 console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
