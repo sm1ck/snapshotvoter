@@ -47,6 +47,6 @@ node main.js <название_проекта> getprops
 ```
 Сохранить список активных проползалов в файл props.json. Для использования списка не забудьте изменить значение переменной ```isPropList``` в true.
 ## Автор
-Автор Jancrypto (telegram)
+Автор JanSergeev (telegram)
 
 Donate: 0x9D278054C3e73294215b63ceF34c385Abe52768B
