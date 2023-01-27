@@ -36,8 +36,8 @@ const rand_mode = 0; // 0 => стандартный, 1 => рандомная о�
 const random_min = 1; // минимальный номер в голосовании
 const random_max = 3; // максимальный номер в голосовании
 const isSleep = true; // задержка перед отправкой, нужна ли? изменить на true, если нужна
-const sleep_from = 3; // от 3 секунд
-const sleep_to = 5; // до 5 секунд
+const sleep_from = 3; // от 30 секунд
+const sleep_to = 10; // до 60 секунд
 const isPropList = false; // кастомный список проползалов
 const type_voting = 0; // 0 => стандартный, 1 => approval
 let isParseProps = false;
@@ -53,7 +53,6 @@ class ClientCustom extends snapshot.Client712 {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },
-            timeout: 5000,
             body: JSON.stringify(envelop)
         };
         return new Promise((resolve, reject) => {
@@ -168,7 +167,7 @@ const voteSnap = (ethWallet, address, prop) => new Promise(async (resolve, rejec
             }
         }
         add_result(address, `${err.error}: ${err.error_description}`);
-        ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
     });
 });
 
@@ -203,7 +202,7 @@ const subSnap = (ethWallet, address) => new Promise(async (resolve, reject) => {
                 console.log(err.error_stack);
             }
         }
-        ((typeof err.error_description === 'string' && (err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
     });
 });
 
