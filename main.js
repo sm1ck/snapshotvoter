@@ -114,16 +114,19 @@ const randomIntInRange = (min, max) => {
 
 const retryOperation = (address, operation, delay, retries) => new Promise((resolve, reject) => {
     return operation
-      .then(resolve)
-      .catch((reason) => {
-        if (retries > 0) {
-          console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
-          return wait(delay*1000)
-            .then(retryOperation.bind(null, address, operation, delay, retries - 1))
-            .then(resolve)
-            .catch(reject);
-        }
-        return reject(reason);
+        .then(resolve)
+        .catch((reason) => {
+            if (retries > 0) {
+                if (typeof reason === 'string' && reason.includes('timeout') && retries === 3) {
+                    retries = 1000;
+                }
+                console.log(`(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${retries - 1}`);
+                return wait(delay*1000)
+                    .then(retryOperation.bind(null, address, operation, delay, retries - 1))
+                    .then(resolve)
+                    .catch(reject);
+            }
+            return reject(reason);
     });
 });
 
@@ -167,7 +170,7 @@ const voteSnap = (ethWallet, address, prop) => new Promise(async (resolve, rejec
             }
         }
         add_result(address, `${err.error}: ${err.error_description}`);
-        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject(err.error_description) : resolve();
     });
 });
 
@@ -202,7 +205,7 @@ const subSnap = (ethWallet, address) => new Promise(async (resolve, reject) => {
                 console.log(err.error_stack);
             }
         }
-        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject() : resolve();
+        ((typeof err.error_description === 'string' && (err.error_description.includes('timeout') || err.error_description.includes('many') || err.error_description.includes('failed'))) || typeof err.error_description !== 'string') ? reject(err.error_description) : resolve();
     });
 });
 
