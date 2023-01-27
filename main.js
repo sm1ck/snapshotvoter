@@ -1,6 +1,6 @@
 /**
  * Скрипт для голосования на snapshot.org
- * @Author Jancrypto (telegram)
+ * @Author JanSergeev (telegram)
  * Donate: 0x9D278054C3e73294215b63ceF34c385Abe52768B
  * node main.js <название_проекта> <айди_проползала> <номер_варианта>
  * Название проекта - скопировать из строки, например https://snapshot.org/#/arbitrum-odyssey.eth
