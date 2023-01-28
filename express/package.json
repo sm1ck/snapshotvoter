@@ -1,0 +1,19 @@
+{
+  "name": "express",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "start": "nodemon App.js"
+  },
+  "author": "sm1ck",
+  "license": "ISC",
+  "dependencies": {
+    "@snapshot-labs/snapshot.js": "^0.4.58",
+    "@wll8/express-ws": "^1.0.5",
+    "ethers": "^5.7.2",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20"
+  },
+  "type": "module"
+}

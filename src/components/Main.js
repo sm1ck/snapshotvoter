@@ -1,0 +1,261 @@
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Container, Panel, Form, Box, Button, Navbar} from "react-bulma-components";
+import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { ToastContext } from '../contexts/ToastContext';
+import Toast from "./Toast";
+import Logs from "./Logs";
+import Title from "./Title";
+
+const useInput = (initialVal, needCheck = true) => {
+    const value = useRef(initialVal);
+    const [color, setColor] = useState('');
+    const [help, setHelp] = useState('');
+    
+    const onChange = event => {
+        value.current = event.target.value;
+        needCheck && fastCheck({
+            value,
+            setColor,
+            setHelp
+        });
+    };
+
+    return {
+        bind: {onChange},
+        value,
+        color,
+        help,
+        setColor,
+        setHelp
+    };
+};
+
+const useRenderInput = (initialVal, needCheck = true, isCheckbox = false) => {
+    const [value, setValue] = useState(initialVal);
+    const rvalue = useRef(initialVal);
+    const [color, setColor] = useState('');
+    const [help, setHelp] = useState('');
+    
+    const onChange = event => {
+        setValue(!isCheckbox ? event.target.value : event.target.checked);
+        rvalue.current = !isCheckbox ? event.target.value : event.target.checked;
+        needCheck && fastCheck({
+            rvalue,
+            setColor,
+            setHelp
+        });
+    };
+
+    return {
+        bind: {onChange},
+        value,
+        rvalue,
+        color,
+        help,
+        setColor,
+        setHelp
+    };
+};
+
+const useWindowSize = () => {
+    const [windowSize, setWindowSize] = useState({
+        width: undefined,
+        height: undefined,
+    });
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowSize({
+                width: window.innerWidth,
+                height: window.innerHeight,
+            });
+        }
+        window.addEventListener("resize", handleResize);
+        handleResize();
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+    return windowSize;
+}
+
+const fastCheck = (hook, customCheck = true, customResponse = '') => {
+    if (!hook.value.current) {
+        hook.setColor('danger');
+        hook.setHelp('Поле не должно быть пустым');
+        return false;
+    } else if (!customCheck) {
+        hook.setColor('danger');
+        hook.setHelp(customResponse);
+        return false;
+    } else {
+        hook.setColor('');
+        hook.setHelp('');
+        return true;
+    }
+};
+
+const isInteger = (int) => !isNaN(String(int)) && Number.isInteger(+(int));
+
+const helpStyle = {
+    fontSize: '0.85rem',
+    marginTop: 0
+};
+
+const panelStyle = {
+    borderBottom: 0,
+    alignItems: 'baseline',
+    display: 'block'
+};
+
+const labelStyle = {
+    width: '100%',
+    maxWidth: 'max-content'
+};
+
+const navbarStyle = {
+    backgroundColor: '#ededed',
+    display: 'flex'
+}
+
+export default function Main() {
+    const [isStarted, setStarted] = useState(false);
+    const project = useInput('');
+    const propolsal = useInput('');
+    const selectorInput = useInput('');
+    const sleep = useInput('');
+    const typeVoting = useRenderInput('0', false);
+    const parseProps = useRenderInput(false, false, true);
+    const [toast, setToast] = useState(null);
+    const [page, setPage] = useState(0);
+    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket('ws://localhost/api', {
+        shouldReconnect: () => true,
+        reconnectInterval: 5000
+    });
+    const size = useWindowSize();
+
+    const handleClickStartVote = useCallback(() => sendJsonMessage({
+        type: 'Vote',
+        project: project.value.current,
+        propolsal: propolsal.value.current,
+        vote: selectorInput.value.current,
+        sleep: sleep.value.current,
+        typeVote: typeVoting.rvalue.current,
+        parseProps: parseProps.rvalue.current
+    }), [sendJsonMessage, project.value, propolsal.value, selectorInput.value, sleep.value, typeVoting.rvalue, parseProps.rvalue]);
+
+    const handleClickStopVote = useCallback(() => sendJsonMessage({ type: 'Stop' }), [sendJsonMessage]);
+
+    const onVote = () => {
+        if (!fastCheck(project, String(project.value.current).toLowerCase().endsWith('.eth'), 'Название должно заканчиваться на .eth')) {
+            return;
+        } else if (!parseProps.rvalue.current && !fastCheck(propolsal, String(propolsal.value.current).toLowerCase().startsWith('0x') && String(propolsal.value.current).toLowerCase().length === 66, 'ID проползала должен начинаться с 0x и иметь длинну 66 символов')) {
+            return;
+        } else if (!fastCheck(selectorInput, isInteger(selectorInput.value.current) || String(selectorInput.value.current).includes('-') ? String(selectorInput.value.current).split('-').every((e) => isInteger(e)): false, 'Вариант должен быть целым числом')) {
+            return;
+        } else if (!fastCheck(sleep, isInteger(sleep.value.current) || String(sleep.value.current).includes('-') ? String(sleep.value.current).split('-').every((e) => isInteger(e)): false, 'Значение задержки должно быть целым числом')) {
+            return;
+        }
+        setStarted(true);
+        handleClickStartVote();
+    }
+
+    const onStop = () => {
+        setStarted(false);
+        handleClickStopVote();
+    };
+
+    const onTogglePage = (num) => setPage(num);
+
+    useEffect(() => {
+        if (lastJsonMessage !== null) {
+            setToast(lastJsonMessage);
+        }
+    }, [lastJsonMessage]);
+
+    useEffect(() => {
+        if (parseProps.value) {
+            propolsal.setColor('');
+            propolsal.setHelp('');
+        }
+    }, [parseProps.value, propolsal]);
+
+    return (
+        <>
+        <Container>
+            {page === 0 ? <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Главная`} /> : <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Логи`} />}
+            <ToastContext.Provider value={{toast, readyState, setStarted}}>
+                <Toast />
+            </ToastContext.Provider>
+            <Panel>
+                <Panel.Header>
+                    <Navbar style={navbarStyle}>
+                        <Navbar.Item onClick={() => onTogglePage(0)}>Голосование</Navbar.Item> <Navbar.Item onClick={() => onTogglePage(1)}>Логи</Navbar.Item>
+                    </Navbar>
+                </Panel.Header>
+                <Box style={page === 0 ? {display: 'block'} : {display: 'none'}}>
+                    <Panel.Block style={panelStyle}>
+                        <Form.Label style={labelStyle}>Название проекта:</Form.Label>
+                        <Form.Input
+                            placeholder="например stgdao.eth"
+                            type="text"
+                            color={project.color}
+                            {...project.bind}
+                        />
+                        <Form.Help style={helpStyle} color={project.color}>{project.help}</Form.Help>
+                    </Panel.Block>
+                    <Panel.Block style={panelStyle}>
+                        <Form.Label style={labelStyle}>ID проползала:</Form.Label>
+                        <Form.Input
+                            placeholder="например 0x4218ee725798f5450583c29e20fa231c782b9f6880ef9170229235e9eb0442ef"
+                            type="text"
+                            color={propolsal.color}
+                            disabled={parseProps.value}
+                            {...propolsal.bind}
+                        />
+                        <Form.Help style={helpStyle} color={propolsal.color}>{propolsal.help}</Form.Help>
+                    </Panel.Block>
+                    <Panel.Block style={panelStyle}>
+                        <Form.Label style={labelStyle}>Введите номер варианта:</Form.Label>
+                        <Form.Input
+                                placeholder="например 1 или 1-4 для случайного варианта"
+                                type="text"
+                                color={selectorInput.color}
+                                {...selectorInput.bind}
+                        />
+                        <Form.Help style={helpStyle} color={selectorInput.color}>{selectorInput.help}</Form.Help>
+                    </Panel.Block>
+                    <Panel.Block style={panelStyle}>
+                        <Form.Label style={labelStyle}>Введите значение задержки:</Form.Label>
+                        <Form.Input
+                                placeholder="например 0 или 5-10"
+                                type="text"
+                                color={sleep.color}
+                                {...sleep.bind}
+                        />
+                        <Form.Help style={helpStyle} color={sleep.color}>{sleep.help}</Form.Help>
+                    </Panel.Block>
+                    <Panel.Block style={size.width >= 1024 ? {...panelStyle, display: 'flex'} : panelStyle}>
+                        <Form.Label style={size.width >= 1024 ? {...labelStyle, whiteSpace: 'pre'} : labelStyle}>Тип голосования:  </Form.Label>
+                        <Form.Radio
+                                {...typeVoting.bind}
+                                checked={typeVoting.value === '0'}
+                                value="0"
+                        >Обычный</Form.Radio>
+                        <Form.Radio
+                                {...typeVoting.bind}
+                                checked={typeVoting.value === '1'}
+                                value="1"
+                        >Approval</Form.Radio>
+                    </Panel.Block>
+                    <Panel.Block style={size.width >= 1024 ? {...panelStyle, display: 'flex'} : panelStyle}>
+                        <Form.Label style={size.width >= 1024 ? {...labelStyle, whiteSpace: 'pre'} : labelStyle}>Голосовать во всех активных проползалах проекта:  </Form.Label>
+                        <Form.Checkbox {...parseProps.bind}></Form.Checkbox>
+                    </Panel.Block>
+                    <Panel.Block style={panelStyle}>
+                        <Button color="link" onClick={() => onVote()} disabled={readyState !== ReadyState.OPEN || isStarted}>Проголосовать</Button> <Button color="danger" onClick={() => onStop()} disabled={!isStarted}>Завершить</Button>
+                    </Panel.Block>
+                </Box>
+                <Logs lastJsonMessage={lastJsonMessage} page={page} isStarted={isStarted} />
+            </Panel>
+        </Container>
+        </>
+    );
+}

@@ -1,0 +1,49 @@
+{
+  "name": "snapshotvoter",
+  "version": "2.0",
+  "private": true,
+  "dependencies": {
+    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "concurrently": "^7.6.0",
+    "dompurify": "^2.4.3",
+    "open-cli": "^7.1.0",
+    "react": "^18.2.0",
+    "react-bulma-components": "^4.1.0",
+    "react-dom": "^18.2.0",
+    "react-helmet": "^6.1.0",
+    "react-hot-toast": "^2.4.0",
+    "react-router-dom": "^6.8.0",
+    "react-scripts": "^5.0.1",
+    "react-use-websocket": "^4.2.0",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run start --prefix express\" \"open-cli http://localhost:80\"",
+    "start_dev": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "concurrently \"npm run start_dev\" \"npm run start --prefix express\""
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
