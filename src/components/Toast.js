@@ -7,109 +7,120 @@ import DOMPurify from 'dompurify';
 // Компонент вывода всплывающих подсказок
 
 export default function Toast() {
+    // Принимаем данные через контекст
     const {toast, readyState, setStarted} = useToast();
+    // Ссылка для кеша предыдущего состояния, возможно избыточно (?)
     const ref = useRef(null);
 
     const reconnect = () => to(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Переподключение к ws</b><br />
             ожидайте..
         </span>, {
             icon: '⚠',
             style: {
                 backgroundColor: 'rgb(255, 153, 0, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const connect = () => to.success(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Подключение к ws</b><br />
             успешно!
         </span>, {
             style: {
                 backgroundColor: 'rgb(97, 211, 69, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const end = () => to.success(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Конец работы</b><br />
             {toast.message}..
         </span>, {
             style: {
                 backgroundColor: 'rgb(97, 211, 69, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const info = () => to(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>{toast.head}</b><br />
             {toast !== null && toast !== undefined && toast.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(toast.head === 'Список проползалов' ? String(toast.message).split('<br />').map((e) => e.slice(0, 7)).join('<br />') : toast.message)}}></span> : ''}
         </span>, {
             icon: 'ℹ',
             style: {
                 backgroundColor: 'rgb(158, 223, 255, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const vote = () => to(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Голосование</b><br />
             {String(toast.address).slice(0, 7)}..
         </span>, {
             icon: 'ℹ',
             style: {
                 backgroundColor: 'rgb(158, 223, 255, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const subscribe = () => to(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Подписка</b><br />
             {String(toast.address).slice(0, 7)}..
         </span>, {
             icon: 'ℹ',
             style: {
                 backgroundColor: 'rgb(158, 223, 255, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const error = () => to.error(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Ошибка{toast !== null && toast !== undefined && toast.hasOwnProperty('space') ? ` | ${toast.space}` : ''}</b><br />
             {toast !== null && toast !== undefined && toast.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(toast.message)}}></span> : ''}..
         </span>, {
             style: {
                 backgroundColor: 'rgb(255, 0, 0, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const error_custom = (custom) => to.error(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Ошибка | {custom.space}</b><br />
             {custom.message}..
         </span>, {
             style: {
                 backgroundColor: 'rgb(255, 0, 0, 0.4)',
+                textAlign: 'center'
             }
         }
     );
 
     const error_end = () => to.error(
-        <span style={{textAlign: 'center'}}>
+        <span>
             <b>Аварийная остановка</b><br />
             {toast.head}<br />
             {toast !== null && toast !== undefined && toast.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(toast.message)}}></span> : ''}
         </span>, {
             style: {
                 backgroundColor: 'rgb(255, 0, 0, 0.4)',
+                textAlign: 'center'
             }
         }
     );

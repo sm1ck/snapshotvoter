@@ -1,98 +1,18 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Container, Panel, Form, Box, Button, Navbar} from "react-bulma-components";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { useInput, useRenderInput, fastCheck } from "../services/form";
+import { useWindowSize } from "../services/window";
 import { ToastContext } from '../contexts/ToastContext';
 import Toast from "./Toast";
 import Logs from "./Logs";
 import Title from "./Title";
 
-const useInput = (initialVal, needCheck = true) => {
-    const value = useRef(initialVal);
-    const [color, setColor] = useState('');
-    const [help, setHelp] = useState('');
-    
-    const onChange = event => {
-        value.current = event.target.value;
-        needCheck && fastCheck({
-            value,
-            setColor,
-            setHelp
-        });
-    };
-
-    return {
-        bind: {onChange},
-        value,
-        color,
-        help,
-        setColor,
-        setHelp
-    };
-};
-
-const useRenderInput = (initialVal, needCheck = true, isCheckbox = false) => {
-    const [value, setValue] = useState(initialVal);
-    const rvalue = useRef(initialVal);
-    const [color, setColor] = useState('');
-    const [help, setHelp] = useState('');
-    
-    const onChange = event => {
-        setValue(!isCheckbox ? event.target.value : event.target.checked);
-        rvalue.current = !isCheckbox ? event.target.value : event.target.checked;
-        needCheck && fastCheck({
-            rvalue,
-            setColor,
-            setHelp
-        });
-    };
-
-    return {
-        bind: {onChange},
-        value,
-        rvalue,
-        color,
-        help,
-        setColor,
-        setHelp
-    };
-};
-
-const useWindowSize = () => {
-    const [windowSize, setWindowSize] = useState({
-        width: undefined,
-        height: undefined,
-    });
-    useEffect(() => {
-        const handleResize = () => {
-            setWindowSize({
-                width: window.innerWidth,
-                height: window.innerHeight,
-            });
-        }
-        window.addEventListener("resize", handleResize);
-        handleResize();
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
-    return windowSize;
-}
-
-const fastCheck = (hook, customCheck = true, customResponse = '') => {
-    if (!hook.value.current) {
-        hook.setColor('danger');
-        hook.setHelp('Поле не должно быть пустым');
-        return false;
-    } else if (!customCheck) {
-        hook.setColor('danger');
-        hook.setHelp(customResponse);
-        return false;
-    } else {
-        hook.setColor('');
-        hook.setHelp('');
-        return true;
-    }
-};
+// Проверка на число
 
 const isInteger = (int) => !isNaN(String(int)) && Number.isInteger(+(int));
+
+// Быстрые стили
 
 const helpStyle = {
     fontSize: '0.85rem',
@@ -115,21 +35,29 @@ const navbarStyle = {
     display: 'flex'
 }
 
+// Главный компонент
+
 export default function Main() {
+    // Флаг активной работы бекенда
     const [isStarted, setStarted] = useState(false);
+    // Инпуты для формы
     const project = useInput('');
     const propolsal = useInput('');
     const selectorInput = useInput('');
     const sleep = useInput('');
     const typeVoting = useRenderInput('0', false);
     const parseProps = useRenderInput(false, false, true);
+    // Последняя полученная подсказка
     const [toast, setToast] = useState(null);
+    // Активная страница приложения
     const [page, setPage] = useState(0);
     const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket('ws://localhost/api', {
         shouldReconnect: () => true,
         reconnectInterval: 5000
     });
     const size = useWindowSize();
+
+    // Отправляем данные на бекенд через веб-сокет
 
     const handleClickStartVote = useCallback(() => sendJsonMessage({
         type: 'Vote',
@@ -142,6 +70,8 @@ export default function Main() {
     }), [sendJsonMessage, project.value, propolsal.value, selectorInput.value, sleep.value, typeVoting.rvalue, parseProps.rvalue]);
 
     const handleClickStopVote = useCallback(() => sendJsonMessage({ type: 'Stop' }), [sendJsonMessage]);
+
+    // Валидация формы при отправке
 
     const onVote = () => {
         if (!fastCheck(project, String(project.value.current).toLowerCase().endsWith('.eth'), 'Название должно заканчиваться на .eth')) {

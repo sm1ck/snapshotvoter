@@ -2,17 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Box, Message } from "react-bulma-components";
 import DOMPurify from 'dompurify';
 
-// Компонент для вывода логов
-
 const logStyle = {
     overflowWrap: 'break-word'
 };
 
 const jsonLogToString = (json) => {
-    let str = null;
     switch(json.type) {
         case 'Vote':
-            str =
+            return(
             <Message color="success">
                 <Message.Header>Голосование</Message.Header>
                 <Message.Body>
@@ -21,60 +18,61 @@ const jsonLogToString = (json) => {
                     Проползал: {json.propolsal}<br />
                     Голос: {json.vote} 
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         case 'Subscribe':
-            str =
+            return(
             <Message color="success">
                 <Message.Header>Подписка</Message.Header>
                 <Message.Body>
                     Адрес: {json.address}<br />
                     Проект: {json.project} 
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         case 'Info':
-            str =
+            return(
             <Message color="info">
                 <Message.Header>{json.head}</Message.Header>
                 <Message.Body>
                     {json.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(json.message)}}></span> : ''}
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         case 'End':
-            str =
+            return(
             <Message color="success">
                 <Message.Header>Конец работы</Message.Header>
                 <Message.Body>
                     {json.message}
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         case 'Error':
-            str =
+            return(
             <Message color="danger">
                 <Message.Header>Ошибка{json.hasOwnProperty('space') ? ` | ${json.space}` : ''}</Message.Header>
                 <Message.Body>
                     {json.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(json.message)}}></span> : ''}
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         case 'ErrorEnd':
-            str =
+            return(
             <Message color="danger">
                 <Message.Header>Аварийная остановка</Message.Header>
                 <Message.Body>
                     {json.head}<br />
                     {json.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(json.message)}}></span> : ''}
                 </Message.Body>
-            </Message>;
-            break;
+            </Message>);
         default:
-
+            return(
+            <Message color="danger">
+                <Message.Header>Неизвестный тип данных</Message.Header>
+                <Message.Body>
+                    Приложение передало с бекэнда неподдерживаемый тип данных.
+                </Message.Body>
+            </Message>);
     }
-    return str;
 };
+
+// Компонент вывода логов
 
 export default function Logs({ lastJsonMessage, page, isStarted }) {
     const [messageHistory, setMessageHistory] = useState([]);

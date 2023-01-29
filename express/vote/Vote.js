@@ -235,13 +235,15 @@ const parsePropsFetch = async (project) => new Promise(async (resolve, reject) =
             }
             console.log('Используем список активных проползалов:', arr);
             ws_info(ws_sock, "Список проползалов", arr.join('<br />'));
-            resolve(arr);
-        } else {
-            flag.isRunning = false;
-            console.log('Ошибка при парсинге данных, прерываем работу.');
-            ws_error_end(ws_sock, 'Ошибка при парсинге', 'прерываем работу..');
-            resolve([]);
+            return resolve(arr);
         }
+        throw new Error('Ошибка при парсинге данных');
+    }).catch((e) => {
+        flag.isRunning = false;
+        console.log('Ошибка при парсинге данных, прерываем работу.');
+        console.dir(e.stack);
+        ws_error_end(ws_sock, 'Ошибка при парсинге', 'прерываем работу..');
+        resolve([]);
     });
 });
 
