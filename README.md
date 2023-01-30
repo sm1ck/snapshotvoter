@@ -1,5 +1,5 @@
 # snapshotvoter
-Приложение на node.js, react.js, express-js для off-chain голосования на snapshot.org
+Приложение на node.js, react.js, express.js для off-chain голосования на snapshot.org
 ## Возможности
 - Создание списка проползалов
 - Поддержка множества приватных адресов
