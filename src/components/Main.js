@@ -1,16 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Container, Panel, Form, Box, Button, Navbar} from "react-bulma-components";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { useInput, useRenderInput, fastCheck } from "../services/form";
+import { useInput, useRenderInput, fastCheck, validateEth, validateProposal, validateIntegerWithHyphen } from "../services/form";
 import { useWindowSize } from "../services/window";
 import { ToastContext } from '../contexts/ToastContext';
 import Toast from "./Toast";
 import Logs from "./Logs";
 import Title from "./Title";
-
-// Проверка на число
-
-const isInteger = (int) => !isNaN(String(int)) && Number.isInteger(+(int));
 
 // Быстрые стили
 
@@ -74,13 +70,13 @@ export default function Main() {
     // Валидация формы при отправке
 
     const onVote = () => {
-        if (!fastCheck(project, String(project.value.current).toLowerCase().endsWith('.eth'), 'Название должно заканчиваться на .eth')) {
+        if (!fastCheck(project, validateEth(project.value.current), 'Название должно заканчиваться на .eth')) {
             return;
-        } else if (!parseProps.rvalue.current && !fastCheck(propolsal, String(propolsal.value.current).toLowerCase().startsWith('0x') && String(propolsal.value.current).toLowerCase().length === 66, 'ID проползала должен начинаться с 0x и иметь длинну 66 символов')) {
+        } else if (!parseProps.rvalue.current && !fastCheck(propolsal, validateProposal(propolsal.value.current), 'ID проползала должен начинаться с 0x и иметь длинну 66 символов')) {
             return;
-        } else if (!fastCheck(selectorInput, isInteger(selectorInput.value.current) || String(selectorInput.value.current).includes('-') ? String(selectorInput.value.current).split('-').every((e) => isInteger(e)): false, 'Вариант должен быть целым числом')) {
+        } else if (!fastCheck(selectorInput, validateIntegerWithHyphen(selectorInput.value.current), 'Вариант должен быть целым числом')) {
             return;
-        } else if (!fastCheck(sleep, isInteger(sleep.value.current) || String(sleep.value.current).includes('-') ? String(sleep.value.current).split('-').every((e) => isInteger(e)): false, 'Значение задержки должно быть целым числом')) {
+        } else if (!fastCheck(sleep, validateIntegerWithHyphen(sleep.value.current), 'Значение задержки должно быть целым числом')) {
             return;
         }
         setStarted(true);
@@ -102,8 +98,7 @@ export default function Main() {
 
     useEffect(() => {
         if (parseProps.value) {
-            propolsal.setColor('');
-            propolsal.setHelp('');
+            propolsal.clear();
         }
     }, [parseProps.value, propolsal]);
 
