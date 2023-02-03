@@ -2,7 +2,7 @@ import { ethers } from 'ethers';
 import snapshot from '@snapshot-labs/snapshot.js';
 import * as accs from './accs.js';
 import fetch from 'node-fetch'
-import { ws_error_msg, ws_vote, ws_sub, ws_info, ws_end, ws_error_end } from './ws.js';
+import { keyIndex, ws_error_msg, ws_vote, ws_sub, ws_info, ws_end, ws_error_end } from './ws.js';
 
 // rpc node url
 
@@ -268,7 +268,7 @@ export const flag = {
 
 export const wsVote = async (ws, json) => {
     let i = 0, promises = [];
-    ws_sock = ws, pretty_result = [], flag.isRunning = true;
+    ws_sock = ws, pretty_result = [], flag.isRunning = true, keyIndex.value = 0;
 
     ws_info(ws, 'Начало работы', `не закрывайте страницу!`);
 
@@ -342,7 +342,7 @@ export const wsVote = async (ws, json) => {
     
     flag.isRunning && await Promise.allSettled(promises).then(() => {
         console.table(pretty_result);
-        ws_end(ws, `Всего голосов: ${pretty_result.length}`);
+        ws_end(ws, `Всего голосов: ${pretty_result.length}<br />Всего успешных голосов: ${pretty_result.filter(e => e['Результат'] === "засчитано").length}`);
     });
     
 }

@@ -29,7 +29,7 @@ const labelStyle = {
 const navbarStyle = {
     backgroundColor: '#ededed',
     display: 'flex'
-}
+};
 
 // Главный компонент
 
@@ -81,7 +81,7 @@ export default function Main() {
         }
         setStarted(true);
         handleClickStartVote();
-    }
+    };
 
     const onStop = () => {
         setStarted(false);
@@ -104,11 +104,11 @@ export default function Main() {
 
     return (
         <>
+        {page === 0 ? <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Главная`} /> : <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Логи`} />}
+        <ToastContext.Provider value={{toast, readyState, setStarted, page}}>
+            <Toast />
+        </ToastContext.Provider>
         <Container>
-            {page === 0 ? <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Главная`} /> : <Title title={`${process.env.REACT_APP_NAME} v${process.env.REACT_APP_VERSION} | Логи`} />}
-            <ToastContext.Provider value={{toast, readyState, setStarted}}>
-                <Toast />
-            </ToastContext.Provider>
             <Panel>
                 <Panel.Header>
                     <Navbar style={navbarStyle}>

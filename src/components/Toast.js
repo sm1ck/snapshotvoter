@@ -8,7 +8,7 @@ import DOMPurify from 'dompurify';
 
 export default function Toast() {
     // Принимаем данные через контекст
-    const {toast, readyState, setStarted} = useToast();
+    const {toast, readyState, setStarted, page} = useToast();
     // Ссылка для кеша предыдущего состояния, возможно избыточно (?)
     const ref = useRef(null);
 
@@ -40,7 +40,7 @@ export default function Toast() {
     const end = () => to.success(
         <span>
             <b>Конец работы</b><br />
-            {toast.message}..
+            {toast !== null && toast !== undefined && toast.hasOwnProperty('message') ? <span dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(toast.message)}}></span> : ''}
         </span>, {
             style: {
                 backgroundColor: 'rgb(97, 211, 69, 0.4)',
@@ -128,6 +128,10 @@ export default function Toast() {
     useEffect(() => {
         if (toast !== null && toast !== ref.current) {
             ref.current = toast;
+            // Не рендерим подсказки на странице логов
+            if (page === 1) {
+                return;
+            }
             switch(toast.type) {
                 case 'Vote':
                     vote();
