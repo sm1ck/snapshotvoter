@@ -13,7 +13,8 @@
     "@wll8/express-ws": "^1.0.5",
     "ethers": "^5.7.2",
     "express": "^4.18.2",
-    "nodemon": "^2.0.20"
+    "nodemon": "^2.0.20",
+    "shared": "file:../shared"
   },
   "type": "module"
 }

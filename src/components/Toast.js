@@ -1,14 +1,15 @@
 import React, { useRef, useEffect} from "react";
 import {toast as to, Toaster } from 'react-hot-toast';
+import DOMPurify from 'dompurify';
+import { WS_TYPE } from "shared";
 import { useToast } from '../contexts/ToastContext';
 import { ReadyState } from "react-use-websocket";
-import DOMPurify from 'dompurify';
 
 // Компонент вывода всплывающих подсказок
 
 export default function Toast() {
     // Принимаем данные через контекст
-    const {toast, readyState, setStarted, page} = useToast();
+    const {toast, readyState, page} = useToast();
     // Ссылка для кеша предыдущего состояния, возможно избыточно (?)
     const ref = useRef(null);
 
@@ -133,25 +134,23 @@ export default function Toast() {
                 return;
             }
             switch(toast.type) {
-                case 'Vote':
+                case WS_TYPE.VOTE:
                     vote();
                     break;
-                case 'Subscribe':
+                case WS_TYPE.SUBSCRIBE:
                     subscribe();
                     break;
-                case 'Info':
+                case WS_TYPE.INFO:
                     info();
                     break;
-                case 'End':
+                case WS_TYPE.END:
                     end();
-                    setStarted(false);
                     break;
-                case 'Error':
+                case WS_TYPE.ERROR:
                     error();
                     break;
-                case 'ErrorEnd':
+                case WS_TYPE.ERROR_END:
                     error_end();
-                    setStarted(false);
                     break;
                 default:
                     error_custom({space: 'Тип данных ws', message: 'Неизвестный тип'});

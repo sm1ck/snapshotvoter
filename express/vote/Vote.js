@@ -38,7 +38,19 @@ class ClientCustom extends snapshot.Client712 {
                 }
                 throw res;
             })
-            .catch((e) => typeof e.json === 'function' ? e.json().then((json) => reject(json)) : reject({error: 'Error', error_description: e.message, error_stack: e.stack}));
+            .catch(async (e) => {
+                if (typeof e.text === 'function') { 
+                    const text = await e.text();
+                    try {
+                        const data = JSON.parse(text);
+                        reject(data);
+                    } catch (e) {
+                        reject({error: 'Error', error_description: 'Can\'t parse json in fetch'});
+                    }
+                } else {
+                    reject({error: 'Error', error_description: e.message, error_stack: e.stack});
+                }
+            });
         });
     }
 }
