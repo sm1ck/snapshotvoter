@@ -40,11 +40,13 @@ export const dispatchHelpEvent = (type, message) => {
 
 // Отправка события для использования полей помощников
 
-export const dispatchCheckBoxEvent = () => {
+export const dispatchCheckBoxEvent = (type) => {
     const checkBoxEvent = new CustomEvent(
         EVENTS_TYPE.CHECKBOX.toString(), 
         { 
-            detail: {}
+            detail: {
+                type
+            }
         }
     );
     window.dispatchEvent(checkBoxEvent);

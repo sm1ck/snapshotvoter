@@ -1,12 +1,13 @@
 import React, { useEffect, useCallback } from "react";
 import { Panel, Form } from "react-bulma-components";
-import { EVENTS_TYPE, INPUT_TYPE } from "shared";
+import { EVENTS_TYPE } from "shared";
 import { useInput, useFormSelect } from "../../services/form";
 import { labelStyle, panelStyle, helpStyle } from "../styles/styles";
 
 export default function InputText({type}) {
     const formAttr = useFormSelect(type);
     const input = useInput(formAttr.context);
+    // Взаимодействуем с help полем вывода сообщений
     const onHelpEvent = useCallback((e) => {
         if (e.detail.type !== type) {
             return false;
@@ -17,14 +18,16 @@ export default function InputText({type}) {
             input.danger(e.detail.message);
         }
     }, [input, type]);
-    const onCheckBoxEvent = useCallback(() => {
-        if (type === INPUT_TYPE.PROPOLSAL) {
+    // Взаимодействуем с чекбоксом
+    const onCheckBoxEvent = useCallback((e) => {
+        if (type === e.detail.type) {
             input.setDisabled(!input.disabled);
         }
     }, [input, type]);
+    // Подключение слушателей
     useEffect(() => {
-        window.addEventListener(EVENTS_TYPE.HELP.toString(), onHelpEvent);
-        window.addEventListener(EVENTS_TYPE.CHECKBOX.toString(), onCheckBoxEvent);
+        window.addEventListener(EVENTS_TYPE.HELP.toString(), onHelpEvent, { passive: true });
+        window.addEventListener(EVENTS_TYPE.CHECKBOX.toString(), onCheckBoxEvent, { passive: true });
         return () => {
             window.removeEventListener(EVENTS_TYPE.HELP.toString(), onHelpEvent);
             window.removeEventListener(EVENTS_TYPE.CHECKBOX.toString(), onCheckBoxEvent);

@@ -17,7 +17,7 @@ export default function CheckBox({type}) {
     return (
         <Panel.Block style={size.width >= 1024 ? {...panelStyle, display: 'flex'} : panelStyle}>
             <Form.Label style={size.width >= 1024 ? {...labelStyle, whiteSpace: 'pre'} : labelStyle}>{formAttr.label}</Form.Label>
-            <Form.Checkbox onChange={input.onChange} onClick={() => dispatchCheckBoxEvent()}></Form.Checkbox>
+            <Form.Checkbox onChange={input.onChange} onClick={() => dispatchCheckBoxEvent(INPUT_TYPE.PROPOLSAL)}></Form.Checkbox>
         </Panel.Block>
     );
 };

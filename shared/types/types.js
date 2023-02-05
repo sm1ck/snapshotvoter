@@ -14,8 +14,8 @@ export const CHECKBOX_TYPE = Object.freeze({
 });
 
 export const EVENTS_TYPE = Object.freeze({
-    HELP: Symbol("helpEvent"),
-    CHECKBOX: Symbol("checkBoxEvent"),
+    HELP: Symbol("snapshotvoter:helpEvent"),
+    CHECKBOX: Symbol("snapshotvoter:checkBoxEvent"),
     CLEAR: Symbol("clear"),
 });
 
