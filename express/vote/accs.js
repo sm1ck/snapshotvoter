@@ -1,7 +1,7 @@
-import keysJson from './keys.json' assert {'type': 'json'};
+import keysJson from "./keys.json" assert { "type": "json" };
 
 export const importAccs = () => {
-    let accs = [];
-    keysJson.forEach(i => accs.push(i));
-    return accs;
+  let accs = [];
+  keysJson.forEach((i) => accs.push(i));
+  return accs;
 };
