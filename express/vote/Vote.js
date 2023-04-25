@@ -122,6 +122,9 @@ const retryOperation = (address, operation, delay, retries) =>
   new Promise((resolve, reject) => {
     return operation.then(resolve).catch((reason) => {
       if (retries > 0) {
+        if (!flag.isRunning) {
+          return reject(reason);
+        }
         if (
           typeof reason === "string" &&
           (reason.includes("timeout") || reason.includes("failed")) &&
