@@ -14,7 +14,9 @@
     "ethers": "^5.7.2",
     "express": "^4.18.2",
     "nodemon": "^2.0.20",
-    "shared": "file:../shared"
+    "shared": "file:../shared",
+    "https-proxy-agent": "^7.0.0",
+    "chalk": "^5.2.0"
   },
   "type": "module"
 }

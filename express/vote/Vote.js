@@ -1,7 +1,9 @@
 import { ethers } from "ethers";
 import snapshot from "@snapshot-labs/snapshot.js";
-import * as accs from "./accs.js";
+import { HttpsProxyAgent } from "https-proxy-agent";
+import chalk from "chalk";
 import fetch from "node-fetch";
+import * as accs from "./accs.js";
 import {
   keyIndex,
   ws_error_msg,
@@ -26,12 +28,16 @@ let sleep_from = 3; // от 30 секунд
 let sleep_to = 10; // до 60 секунд
 let type_voting = 0; // 0 => стандартный, 1 => approval
 
+// Прокси
+
+let proxies = (await accs.importProxies()).map((v) => new HttpsProxyAgent(v));
+
 // Кастомный клиент для обработки исключений
 
 class ClientCustom extends snapshot.Client712 {
   async send(envelop) {
     const url = `${this.address}/api/msg`;
-    const init = {
+    let init = {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -39,6 +45,12 @@ class ClientCustom extends snapshot.Client712 {
       },
       body: JSON.stringify(envelop),
     };
+    if (proxies.length > 0) {
+      init = {
+        ...init,
+        agent: proxies[randomIntInRange(0, proxies.length - 1)],
+      };
+    }
     return new Promise((resolve, reject) => {
       fetch(url, init)
         .then((res) => {
@@ -133,7 +145,9 @@ const retryOperation = (address, operation, delay, retries) =>
           retries = 1000;
         }
         console.log(
-          `(Ошибка) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${
+          `(${chalk.red(
+            "Ошибка"
+          )}) ${address} => повторная отправка действия, задержка: ${delay}с, осталось попыток: ${
             retries - 1
           }`
         );
@@ -191,7 +205,9 @@ const voteSnap = (ethWallet, address, project, prop, vote) =>
       })
       .then((result) => {
         if (result.hasOwnProperty("id")) {
-          console.log(`(Голосование) ${address} => голос засчитан`);
+          console.log(
+            `(${chalk.green("Голосование")}) ${address} => голос засчитан`
+          );
           add_result(address, "засчитано");
           ws_vote(
             ws_sock,
@@ -201,7 +217,7 @@ const voteSnap = (ethWallet, address, project, prop, vote) =>
             rand_mode == 0 ? vote : rand_cache
           );
         } else {
-          console.log(`(Голосование) ${address} =>`);
+          console.log(`(${chalk.red("Голосование")}) ${address} =>`);
           console.dir(result);
           add_result(address, "неизвестно");
           ws_error_msg(
@@ -214,7 +230,9 @@ const voteSnap = (ethWallet, address, project, prop, vote) =>
       })
       .catch((err) => {
         if (typeof err.error_description !== "string") {
-          console.log(`(Голосование) ${address} => ошибка "${err.error}":`);
+          console.log(
+            `(${chalk.red("Голосование")}) ${address} => ошибка "${err.error}":`
+          );
           console.dir(err.error_description);
           if (err.hasOwnProperty("error_stack")) {
             console.log(err.error_stack);
@@ -226,7 +244,9 @@ const voteSnap = (ethWallet, address, project, prop, vote) =>
           );
         } else {
           console.log(
-            `(Голосование) ${address} => ошибка "${err.error}": ${err.error_description}`
+            `(${chalk.red("Голосование")}) ${address} => ошибка "${
+              err.error
+            }": ${err.error_description}`
           );
           if (err.hasOwnProperty("error_stack")) {
             console.log(err.error_stack);
@@ -266,10 +286,12 @@ const subSnap = (ethWallet, address, project) =>
       })
       .then((result) => {
         if (result.hasOwnProperty("id")) {
-          console.log(`(Подписка) ${address} => вы подписались`);
+          console.log(
+            `(${chalk.green("Подписка")}) ${address} => вы подписались`
+          );
           ws_sub(ws_sock, address, project);
         } else {
-          console.log(`(Подписка) ${address} =>`);
+          console.log(`(${chalk.red("Подписка")}) ${address} =>`);
           console.dir(result);
           ws_error_msg(
             ws_sock,
@@ -281,7 +303,9 @@ const subSnap = (ethWallet, address, project) =>
       })
       .catch((err) => {
         if (typeof err.error_description !== "string") {
-          console.log(`(Подписка) ${address} => ошибка "${err.error}":`);
+          console.log(
+            `(${chalk.red("Подписка")}) ${address} => ошибка "${err.error}":`
+          );
           console.dir(err.error_description);
           if (err.hasOwnProperty("error_stack")) {
             console.log(err.error_stack);
@@ -293,7 +317,9 @@ const subSnap = (ethWallet, address, project) =>
           );
         } else {
           console.log(
-            `(Подписка) ${address} => ошибка "${err.error}": ${err.error_description}`
+            `(${chalk.red("Подписка")}) ${address} => ошибка "${err.error}": ${
+              err.error_description
+            }`
           );
           if (err.hasOwnProperty("error_stack")) {
             console.log(err.error_stack);
@@ -408,7 +434,7 @@ export const wsVote = async (ws, json) => {
 
   // Импорт аккаунтов
 
-  const adata = accs.importAccs();
+  const adata = await accs.importAccs();
 
   // Получаем проползалы из json или с сайта snapshot.org
 
@@ -486,7 +512,9 @@ export const wsVote = async (ws, json) => {
       promises
         .at(prom - 1)
         .then(() =>
-          i < adata.length ? console.log(`Задержка ${sle}с..`) : null
+          i < adata.length
+            ? console.log(`Задержка ${chalk.yellow(sle)}с..`)
+            : null
         );
       i < adata.length ? await sleep(sle * 1000) : null;
     }
