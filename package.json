@@ -6,12 +6,14 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Jan",
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "@snapshot-labs/snapshot.js": "^0.4.47",
+    "chalk": "^5.2.0",
     "ethers": "^5.7.2",
     "fs": "^0.0.1-security",
+    "https-proxy-agent": "^7.0.0",
     "path": "^0.12.7",
     "url": "^0.11.0"
   },
