@@ -114,27 +114,6 @@ const sleep = async (millis) =>
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Абстрактная форматированная задержка
- * @param {Number} time время в секундах
- * @returns
- */
-
-const formattedSleep = async (time) => {
-  let bar = new SingleBar({
-    format: `Задержка | ${chalk.green("{bar}")} | {value}/{total} с.`,
-    barCompleteChar: "\u2588",
-    barIncompleteChar: "\u2591",
-    hideCursor: true,
-  });
-  bar.start(time, 0);
-  for (let i = 0; i < time; i++) {
-    await sleep(1000);
-    bar.increment();
-  }
-  bar.stop();
-};
-
-/**
  * Запись в итоговый результат
  * @param {String} address
  * @param {String} result
