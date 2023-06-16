@@ -25,7 +25,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as accs from "./accs.js";
 
-const version = "1.2.3";
+const version = "1.2.4";
 const __dirname = path.resolve();
 
 // rpc node url
