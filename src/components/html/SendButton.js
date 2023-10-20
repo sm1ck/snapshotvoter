@@ -20,6 +20,7 @@ export default function SendButton() {
     sleepRef,
     typeVotingRef,
     parsePropsRef,
+    subscribeRef,
   } = useInputContext();
 
   // Отправляем данные на бекенд через веб-сокет
@@ -34,6 +35,7 @@ export default function SendButton() {
         sleep: sleepRef.current,
         typeVote: typeVotingRef.current,
         parseProps: parsePropsRef.current,
+        subscribe: subscribeRef.current,
       }),
     [
       sendJsonMessage,
@@ -43,6 +45,7 @@ export default function SendButton() {
       sleepRef,
       typeVotingRef,
       parsePropsRef,
+      subscribeRef,
     ]
   );
 

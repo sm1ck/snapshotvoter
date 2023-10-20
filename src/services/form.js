@@ -172,6 +172,7 @@ export const useFormSelect = (type) => {
     sleepRef,
     typeVotingRef,
     parsePropsRef,
+    subscribeRef,
   } = useInputContext();
   switch (type) {
     case INPUT_TYPE.PROJECT:
@@ -209,6 +210,11 @@ export const useFormSelect = (type) => {
       return {
         label: "Голосовать во всех активных проползалах проекта:  ",
         context: parsePropsRef,
+      };
+    case CHECKBOX_TYPE.SUBSCRIBE:
+      return {
+        label: "Подписаться на проект:  ",
+        context: subscribeRef,
       };
     default:
       throw new Error("Undefined type of input form");

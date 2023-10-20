@@ -27,6 +27,7 @@ export default function MainPanel() {
   const sleepRef = useRef("");
   const typeVotingRef = useRef("0");
   const parsePropsRef = useRef("");
+  const subscribeRef = useRef("");
   // Активная страница приложения
   const [page, setPage] = useState(0);
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
@@ -102,6 +103,7 @@ export default function MainPanel() {
               sleepRef,
               typeVotingRef,
               parsePropsRef,
+              subscribeRef,
             }}
           >
             <InputText type={INPUT_TYPE.PROJECT} />
@@ -110,6 +112,7 @@ export default function MainPanel() {
             <InputText type={INPUT_TYPE.SLEEP} />
             <RadioButton type={RADIO_BUTTON_TYPE.VOTE} />
             <CheckBox type={CHECKBOX_TYPE.PARSEPROPS} />
+            <CheckBox type={CHECKBOX_TYPE.SUBSCRIBE} />
             <SendButton />
           </InputContext.Provider>
         </Box>

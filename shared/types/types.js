@@ -11,6 +11,7 @@ export const RADIO_BUTTON_TYPE = Object.freeze({
 
 export const CHECKBOX_TYPE = Object.freeze({
   PARSEPROPS: Symbol("parseProps"),
+  SUBSCRIBE: Symbol("subscribe"),
 });
 
 export const EVENTS_TYPE = Object.freeze({

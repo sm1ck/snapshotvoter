@@ -27,6 +27,7 @@ let isSleep = true; // задержка перед отправкой, нужн�
 let sleep_from = 3; // от 30 секунд
 let sleep_to = 10; // до 60 секунд
 let type_voting = 0; // 0 => стандартный, 1 => approval
+let isSubscribe = false; // делаем ли подписку
 
 // Прокси
 
@@ -467,6 +468,10 @@ export const wsVote = async (ws, json) => {
 
   type_voting = +json.typeVote;
 
+  // Есть ли подписка
+
+  isSubscribe = json.subscribe ? Boolean(json.subscribe) : isSubscribe;
+
   for (let acc of adata) {
     if (!flag.isRunning) {
       console.log("Связь с вебсокетом потеряна, прерываем..");
@@ -492,14 +497,16 @@ export const wsVote = async (ws, json) => {
 
         // Подписка
 
-        prom_list.push(
-          retryOperation(
-            address,
-            subSnap(ethWallet, address, json.project),
-            isSleep ? randomIntInRange(sleep_from, sleep_to) : 1,
-            3
-          )
-        );
+        if (isSubscribe) {
+          prom_list.push(
+            retryOperation(
+              address,
+              subSnap(ethWallet, address, json.project),
+              isSleep ? randomIntInRange(sleep_from, sleep_to) : 1,
+              3
+            )
+          );
+        }
 
         await Promise.allSettled(prom_list).then(() => resolve());
       })

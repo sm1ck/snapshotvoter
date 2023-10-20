@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Panel, Form } from "react-bulma-components";
-import { INPUT_TYPE, EVENTS_TYPE } from "shared";
+import { INPUT_TYPE, EVENTS_TYPE, CHECKBOX_TYPE } from "shared";
 import { useToast } from "../../contexts/ToastContext";
 import {
   useRenderInput,
@@ -15,10 +15,10 @@ export default function CheckBox({ type }) {
   const formAttr = useFormSelect(type);
   const input = useRenderInput(formAttr.context, false, true);
   useEffect(() => {
-    if (input.value) {
+    if (input.value && type === CHECKBOX_TYPE.PARSEPROPS) {
       dispatchHelpEvent(INPUT_TYPE.PROPOLSAL, EVENTS_TYPE.CLEAR);
     }
-  }, [input.value]);
+  }, [input.value, type]);
   return (
     <Panel.Block
       style={
@@ -34,7 +34,11 @@ export default function CheckBox({ type }) {
       </Form.Label>
       <Form.Checkbox
         onChange={input.onChange}
-        onClick={() => dispatchCheckBoxEvent(INPUT_TYPE.PROPOLSAL)}
+        onClick={
+          type === CHECKBOX_TYPE.PARSEPROPS
+            ? () => dispatchCheckBoxEvent(INPUT_TYPE.PROPOLSAL)
+            : null
+        }
       ></Form.Checkbox>
     </Panel.Block>
   );
