@@ -86,3 +86,16 @@ node main.js <название_проекта> getprops
 Автор JanSergeev (telegram)
 
 Donate: 0x9D278054C3e73294215b63ceF34c385Abe52768B
+
+---
+
+## Other Projects by Maintainer
+
+Maintained by [@sm1ck](https://github.com/sm1ck). Other projects:
+
+- **[HoneyChat](https://honeychat.bot)** ([GitHub](https://github.com/sm1ck/honeychat) · [@HoneyChatAIBot](https://t.me/HoneyChatAIBot)) — production AI companion platform with **7-provider OAuth** (Google, Discord, Twitter/X, Yandex, Line, Kakao, Telegram Login Widget) + email + guest sessions. If you've worked with Snapshot's off-chain signature flow, the [multi-auth case study](docs/case-studies/honeychat-multi-auth.md) in this repo covers related patterns — cookie-bound state validation (RFC 6749 §10.12), refresh-token hashing, guest→registered migration.
+- [layerzero-aptos](https://github.com/sm1ck/layerzero-aptos) — Automated ETH→Aptos bridging via LayerZero
+- [TestnetBridge](https://github.com/sm1ck/TestnetBridge) — LayerZero bridge implementation in Rust
+- [awesome-telegram-ai-bots](https://github.com/sm1ck/awesome-telegram-ai-bots) — Curated list
+
+Maintainer contact: [t.me/haruto_j](https://t.me/haruto_j)
